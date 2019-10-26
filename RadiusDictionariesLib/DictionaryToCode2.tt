@@ -98,7 +98,7 @@ using RadiusDictionariesLib.Types;
 	var avpCounts = new Dictionary<string, int>();
 	foreach(var a in avps) {
 		var avpname = SafeClassName(a.name, avpCounts);
-		manager.StartNewFile($"Generated\\AttributeClasses\\{avpname}.cs");
+		manager.StartNewFile($"Generated{Path.DirectorySeparatorChar}AttributeClasses{Path.DirectorySeparatorChar}{avpname}.cs");
 #>
 namespace RadiusDictionariesLib.Attributes
 {
@@ -127,7 +127,7 @@ namespace RadiusDictionariesLib.Attributes
 	var vcnCounts = new Dictionary<string, int>();
 	foreach(var p in vendors) {
 	var vcn = SafeClassName(p.Key, vcnCounts);
-#><# manager.StartNewFile($"Generated\\VendorClasses\\{vcn}.cs"); #>
+#><# manager.StartNewFile($"Generated{Path.DirectorySeparatorChar}VendorClasses{Path.DirectorySeparatorChar}{vcn}.cs"); #>
 
 namespace RadiusDictionariesLib
 {
