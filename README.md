@@ -14,11 +14,9 @@ dotnet add package RadiusDictionariesLib
 Next, some code.  Let's say you are a vendor and want to make sure that your code only makes use of your own VSA's.  Well, you can do that:
 
 ```csharp
-class MyClass {
-    public do DoTheThing(IArubaAttribute attr) {
-        // attr is strongly-typed to be one of the attributes defined in Aruba's dictionary.
-        // ...
-    }
+public void DoTheThing(IArubaAttribute attr) {
+    // attr is strongly-typed to be one of the attributes defined in Aruba's dictionary.
+    // ...
 }
 ```
 Or, if you want to vary control-flow based on attribute types with pattern matching:
