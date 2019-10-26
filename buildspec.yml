@@ -21,6 +21,11 @@ phases:
   build: 
     commands:
       - echo "Building Packages"
+      - dotnet restore
+      - pushd . && cd RadiusDictionariesLib
+      - dotnet tt DictionaryToCode2.tt
+      - popd
+      - dotnet build
       - dotnet pack -c Release /p:Version=$specifier -o ./nupkg .
       - echo "Pushing new Package versions"
       - for i in ./nupkg/*.nupkg; do nuget push -Source github "$i"; done
