@@ -1,0 +1,19 @@
+# -*- text -*-
+# Copyright (C) 2019 The FreeRADIUS Server project and contributors
+# This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
+# Version $Id: add2ad5ea5dcec6c001f0c32b9c2e1db36ecfd67 $
+##############################################################################
+#
+#	British Telecom VSA's
+#
+#	$Id: add2ad5ea5dcec6c001f0c32b9c2e1db36ecfd67 $
+#
+##############################################################################
+
+VENDOR		BT				594
+
+BEGIN-VENDOR	BT
+
+ATTRIBUTE	SID-Auth				1	string
+
+END-VENDOR	BT

@@ -1,0 +1,44 @@
+# -*- text -*-
+# Copyright (C) 2019 The FreeRADIUS Server project and contributors
+# This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
+# Version $Id: b259d9cfabfc1e9c7bdb802e5c7359a31d39a019 $
+##############################################################################
+#
+#	Fortinet's VSA's
+#	As posted to the list by Richie Lee.
+#
+#	http://kb.fortinet.com/kb/viewContent.do?externalId=FD36919&sliceId=1
+#
+#	$Id: b259d9cfabfc1e9c7bdb802e5c7359a31d39a019 $
+#
+##############################################################################
+
+#
+#	Fortinet's VSA's
+#
+
+VENDOR		Fortinet			12356
+
+BEGIN-VENDOR	Fortinet
+ATTRIBUTE	Fortinet-Group-Name			1	string
+ATTRIBUTE	Fortinet-Client-IP-Address		2	ipaddr
+ATTRIBUTE	Fortinet-Vdom-Name			3	string
+ATTRIBUTE	Fortinet-Client-IPv6-Address		4	octets
+ATTRIBUTE	Fortinet-Interface-Name			5	string
+ATTRIBUTE	Fortinet-Access-Profile			6	string
+ATTRIBUTE	Fortinet-FAC-Auth-Status		11	string
+ATTRIBUTE	Fortinet-FAC-Token-ID			12	string
+ATTRIBUTE	Fortinet-FAC-Challenge-Code		15	string
+ATTRIBUTE	Fortinet-Webfilter-Category-Allow	16	octets
+ATTRIBUTE	Fortinet-Webfilter-Category-Block	17	octets
+ATTRIBUTE	Fortinet-Webfilter-Category-Monitor	18	octets
+ATTRIBUTE	Fortinet-AppCtrl-Category-Allow		19	octets
+ATTRIBUTE	Fortinet-AppCtrl-Category-Block		20	octets
+ATTRIBUTE	Fortinet-AppCtrl-Risk-Allow		21	octets
+ATTRIBUTE	Fortinet-AppCtrl-Risk-Block		22	octets
+ATTRIBUTE	Fortinet-WirelessController-Device-MAC	23	ether
+ATTRIBUTE	Fortinet-WirelessController-WTP-ID	24	string
+ATTRIBUTE	Fortinet-WirelessController-Assoc-Time	25	date
+ATTRIBUTE	Fortinet-FWN-AVPair			26	string
+
+END-VENDOR Fortinet

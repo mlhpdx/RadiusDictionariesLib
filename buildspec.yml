@@ -1,0 +1,30 @@
+version: 0.2 
+ 
+# builds, tests and publishes the nuget package.
+ 
+phases: 
+  install: 
+    runtime-versions:
+      dotnet: 2.2
+    commands: 
+      - apt-get install nuget -y
+      - mozroots --import --sync
+      - nuget sources Add -Name github -Source https://nuget.pkg.github.com/mlhpdx/index.json -Username $GITHUB_USER_NAME -Password $GITHUB_PASSWORD
+ 
+  pre_build: 
+    commands: 
+      - export version=1.0.0
+      - export qualifier=build
+      - export suffix=$(date +%s)-$(echo $CODEBUILD_SOURCE_VERSION | cut -c 32-)
+      - export specifier=$(case $qualifier in "build") echo "$version-$qualifier.$suffix" ;; "release") echo "$version" ;; "*") echo "$version-$qualifier" ;; esac)
+       
+  build: 
+    commands:
+      - echo "Building Packages"
+      - dotnet pack -c Release /p:Version=$specifier -o ./nupkg .
+      - echo "Pushing new Package versions"
+      - for i in ./nupkg/*.nupkg; do nuget push -Source github "$i"; done
+ 
+artifacts: 
+  files: 
+    - ./nupkg/*.nupkg 

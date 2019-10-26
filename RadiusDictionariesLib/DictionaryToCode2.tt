@@ -1,0 +1,181 @@
+﻿<#@ template language="C#" hostspecific="True" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Globalization" #>
+<#@ output extension=".cs" #>
+<#@ include file="MultipleOutputHelper.ttinclude"#><# var manager = Manager.Create(Host, GenerationEnvironment); #><# manager.StartHeader(false); #>
+/* 
+   ~ THIS FILE IS AUTO-GENERATED FROM RADIUS DICTIONARIES! ~ 
+   ~  DO NOT HAND EDIT! DO NOT COMMIT TO SOURCE CONTROL!   ~
+*/
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Net;
+using RadiusDictionariesLib.Types;
+
+<# manager.EndBlock(); #><#
+	var us = new CultureInfo("en-US", false).TextInfo;
+
+	var root = Path.Combine(Host.ResolvePath(string.Empty), "Dictionaries");
+	var files = File.ReadAllLines(Path.Combine(root, "dictionary"))
+		.Where(line => line.StartsWith("$INCLUDE "))
+		.Select(line => Path.Combine(root, line.Replace("$INCLUDE ", string.Empty)));
+    // var files = Directory.GetFiles(Path.Combine(root, "Dictionaries"));
+
+	var lines = files.ToDictionary(f => f, f => File.ReadAllLines(f));
+	var info = lines.Select(d => new {
+	    file = d.Key,
+		extension = Path.GetExtension(d.Key).Substring(1),
+		vendor = d.Value.FirstOrDefault(line => line.StartsWith("VENDOR"))?.Split().Where(s => !string.IsNullOrWhiteSpace(s)).ToArray() ?? new[] { "VENDOR", "Unknown", "0" },
+		attributes = d.Value.Where(line => line.StartsWith("ATTRIBUTE"))
+			.Select(line => line.Split().Where(s => !string.IsNullOrWhiteSpace(s)).ToArray()).ToArray(),
+		values = d.Value.Where(line => line.StartsWith("VALUE"))
+			.Select(line => line.Split().Where(s => !string.IsNullOrWhiteSpace(s)).ToArray())
+			.Select(v => new { parent = v[1], name = v[2], value = v[3] }).Distinct()
+			.ToLookup(v => v.parent).ToDictionary(g => g.Key)
+	}).ToArray();
+
+	string SafeClassName(string s, IDictionary<string, int> counts) {
+		if (!char.IsLetter(s[0])) s = "#" + s; // TODO: do better
+		s = s.Replace("+", "-Plus-");
+		var parts = s.Split(new[]{ '-', ' ', '_', '<', '>', '/', '.', ',' }, StringSplitOptions.RemoveEmptyEntries);
+		s = string.Join(string.Empty, parts.Select(
+			p => $"{p.Substring(0,1).ToUpper()}{p.Substring(1).ToLower()}".Replace("#", "_")
+		));
+		if (counts.ContainsKey(s)) {
+			while (counts.ContainsKey(s))
+				s = s + (counts[s] += 1).ToString();
+		} else counts.Add(s, 1);
+		return s;
+	}
+
+	var avps = info
+		.Where(p => p.vendor[1] == "Unknown")
+		.SelectMany(p => p.attributes.Select(a => new { id = a[2], name = a[1], type = a[3], p }))
+		.Distinct()
+		.Select(a => new {
+			a.id, 
+			a.name,
+			a.type,
+			values = a.p.values.ContainsKey(a.name) ? a.p.values[a.name] : null
+		})
+		.ToLookup(a => a.id)
+		.Select(g => g.First());
+
+	var vendors = info
+		.Where(p => p.vendor[1] != "Unknown")
+		.ToLookup(p => p.vendor[1], p => p)
+		.ToDictionary(g => g.Key, g => new {
+			files = g.Select(p => p.file).Distinct(),
+			extensions = g.Select(p => p.extension).Distinct(),
+			vendors = g.Select(p => new { id = p.vendor[2], name = p.vendor[1] }).Distinct(),
+			attributes = g
+				.SelectMany(p => p.attributes.Select(a => new { id = a[2], name = a[1], type = a[3], p }))
+				.Distinct()
+				.Select(a => new {
+					a.id, 
+					a.name,
+					a.type,
+					values = a.p.values.ContainsKey(a.name) ? a.p.values[a.name] : null
+				})
+		});
+
+	string AttrType(string attr) {
+		switch (attr) { 
+			case "string": return "string"; 
+			case "integer": return "uint"; 
+			case "byte": return "byte";
+			case "ipaddr": 
+			case "ip6addr": return "IPAddress"; 
+			default: return "ArraySegment<byte>"; 
+		}
+	}
+#><# 
+	var avpCounts = new Dictionary<string, int>();
+	foreach(var a in avps) {
+		var avpname = SafeClassName(a.name, avpCounts);
+		manager.StartNewFile($"Generated\\AttributeClasses\\{avpname}.cs");
+#>
+namespace RadiusDictionariesLib.Attributes
+{
+<#		if (a.values != null) { #>
+	public enum <#= avpname #>Value : uint {
+<#			var ncnCounts = new Dictionary<string, int>();
+			foreach(var v in a.values) { 
+				var ncn = SafeClassName(v.name, ncnCounts);
+				if (ncn == avpname) ncn += "Value";
+#>
+		[Description("<#= v.name #>")]
+		<#= ncn #> = <#= v.value #>,
+<# 
+			} #>
+	}
+<#		} #>
+	public class <#= avpname #> : RadiusAttributeDefinition<<#= a.values == null ? AttrType(a.type) : avpname + "Value" #>>
+	{
+        public static AttributeTypeIdentifier AttributeId => "<#= a.id #>";
+        public static string Name => "<#= a.name #>";
+	}
+}
+
+<#		manager.EndBlock();
+	}
+	var vcnCounts = new Dictionary<string, int>();
+	foreach(var p in vendors) {
+	var vcn = SafeClassName(p.Key, vcnCounts);
+#><# manager.StartNewFile($"Generated\\VendorClasses\\{vcn}.cs"); #>
+
+namespace RadiusDictionariesLib
+{
+	namespace VendorAttributes
+	{
+		// Extracted from file(s): 
+<#= string.Join(Environment.NewLine, p.Value.files.Select(f => $"\t\t// - {Path.GetFileName(f)}")) #>
+		//		
+		public static class <#= vcn #>
+		{
+			public static uint VendorId => <#= p.Value.vendors.First().id #>;
+			public static string Name => "<#= p.Value.vendors.First().name #>";
+
+			public interface I<#= vcn #>Attribute : IVendorSpecificAttribute {}
+			public class <#= vcn #>Attribute<T> : RadiusAttributeDefinition<T>, I<#= vcn #>Attribute { }
+<# 
+	var acnCounts = new Dictionary<string, int>();
+	foreach(var a in p.Value.attributes) 
+	{ 
+		var acn = SafeClassName(a.name, acnCounts);
+		if (acn.StartsWith(vcn) && acn.Length > vcn.Length) {
+			acn = acn.Substring(vcn.Length);
+			if (!char.IsLetter(acn[0]))
+				acn = "_" + acn;
+		}
+#>
+<#		if (a.values != null) { #>
+			public enum <#= acn #>Value : uint {
+<#			var ncnCounts = new Dictionary<string, int>();
+			foreach(var v in a.values) { 
+				var ncn = SafeClassName(v.name, ncnCounts);
+				if (ncn == acn) ncn += "Value";
+#>
+				[Description("<#= v.name #>")]
+				<#= ncn #> = <#= v.value #>,
+<# 
+			} #>
+			}
+<#		} #>
+			public class <#= acn #> : <#= vcn #>Attribute<<#= a.values == null ? AttrType(a.type) : acn + "Value" #>>
+			{
+				public static AttributeTypeIdentifier AttributeId => "<#= a.id #>";
+				public static string Name => "<#= a.name #>";
+			}
+<# } #>
+		}
+	}
+}
+<# } #>
+<# manager.EndBlock(); #>
+<# manager.Process(true, true); #>

@@ -1,0 +1,18 @@
+# -*- text -*-
+# Copyright (C) 2019 The FreeRADIUS Server project and contributors
+# This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
+# Version $Id: a5415ba168327c06d0c754e6dc89c63ed77480f2 $
+#
+#	For Merit.
+#
+#	$Id: a5415ba168327c06d0c754e6dc89c63ed77480f2 $
+#
+VENDOR		Merit				61
+
+BEGIN-VENDOR	Merit
+
+ATTRIBUTE	Merit-Proxy-Action			211	string
+ATTRIBUTE	Merit-User-Id				222	string
+ATTRIBUTE	Merit-User-Realm			223	string
+
+END-VENDOR	Merit

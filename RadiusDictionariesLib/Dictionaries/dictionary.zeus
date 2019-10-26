@@ -1,0 +1,24 @@
+# -*- text -*-
+# Copyright (C) 2019 The FreeRADIUS Server project and contributors
+# This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
+# Version $Id: 53868640b920ef09eb8225ebe1b569f08766373f $
+# dictionary.zeus
+# Zeus Packet RADIUS Dictionary
+#
+# Zeus was bought by Riverbed in July 2011.
+# Riverbed sold the SteelApp business unit to Brocade in March 2015.
+# Brocade sold the vADC business unit to Pulse Secure in June 2017.
+#
+# https://www.pulsesecure.net/vadc
+#
+#
+
+VENDOR		Zeus				7146
+BEGIN-VENDOR	Zeus
+
+#
+# ZXTM Group Attributes
+#
+ATTRIBUTE	Zeus-ZXTM-Group				1	string
+
+END-VENDOR Zeus

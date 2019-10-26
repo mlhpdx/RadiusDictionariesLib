@@ -1,0 +1,26 @@
+# -*- text -*-
+# Copyright (C) 2019 The FreeRADIUS Server project and contributors
+# This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
+# Version $Id: b1eb5fb5ddeb59ad11f9072501f506e4a137a511 $
+#
+# dictionary.garderos
+#
+# Version: $Id: b1eb5fb5ddeb59ad11f9072501f506e4a137a511 $
+#
+#	For documentation on Garderos attributes, see:
+#
+#	http://www.garderos.com
+
+VENDOR		Garderos			16108
+
+#
+#    Standard attribute
+#
+BEGIN-VENDOR	Garderos
+
+ATTRIBUTE	Garderos-Location-Name			1	string
+ATTRIBUTE	Garderos-Service-Name			2	string
+ATTRIBUTE	Garderos-MSISDN				3	string
+ATTRIBUTE	Garderos-Proxy				4	string
+
+END-VENDOR	Garderos

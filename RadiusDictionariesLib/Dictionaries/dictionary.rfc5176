@@ -1,0 +1,12 @@
+# -*- text -*-
+# Copyright (C) 2019 The FreeRADIUS Server project and contributors
+# This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
+# Version $Id: 802d2d528901c7b6af4bf8a11aa2a5681fc92cf1 $
+#
+#	Attributes and values defined in RFC 5176.
+#	http://www.ietf.org/rfc/rfc5176.txt
+#
+#	$Id: 802d2d528901c7b6af4bf8a11aa2a5681fc92cf1 $
+#
+VALUE	Error-Cause			Invalid-Attribute-Value	407
+VALUE	Error-Cause			Multiple-Session-Selection-Unsupported 508

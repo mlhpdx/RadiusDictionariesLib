@@ -1,0 +1,25 @@
+# -*- text -*-
+# Copyright (C) 2019 The FreeRADIUS Server project and contributors
+# This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
+# Version $Id: fcf9406b88adaa65638ee90e14bced5937b11d28 $
+#
+# dictionary.xirrus
+#
+#  For documentation on Xirrus RADIUS VSA attributes, see:
+#
+# http://online-docs.cloud.xirrus.com/aos/prod/7.5/wwhelp/wwhimpl/js/html/wwhelp.htm#href=RADIUS_VSAs.html
+#
+#
+#       $Id: fcf9406b88adaa65638ee90e14bced5937b11d28 $
+#
+VENDOR		Xirrus				21013
+
+#
+#       Standard attribute
+#
+BEGIN-VENDOR	Xirrus
+
+ATTRIBUTE	Xirrus-Admin-Role			1	string
+
+END-VENDOR      Xirrus
+

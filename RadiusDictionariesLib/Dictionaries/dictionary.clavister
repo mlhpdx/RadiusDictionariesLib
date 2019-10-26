@@ -1,0 +1,22 @@
+# -*- text -*-
+# Copyright (C) 2019 The FreeRADIUS Server project and contributors
+# This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
+# Version $Id: add411624eb9b2e0d0a879671f3ee1cd137a93dc $
+##############################################################################
+#
+#	Clavister VSAs
+#
+#	$Id: add411624eb9b2e0d0a879671f3ee1cd137a93dc $
+#
+##############################################################################
+
+VENDOR		Clavister			5089
+
+#
+# User group attribute
+#
+BEGIN-VENDOR	Clavister
+
+ATTRIBUTE	Clavister-User-Group			1	string
+
+END-VENDOR	Clavister

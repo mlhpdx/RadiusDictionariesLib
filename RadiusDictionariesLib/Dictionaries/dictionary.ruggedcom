@@ -1,0 +1,13 @@
+# -*- text -*-
+# Copyright (C) 2019 The FreeRADIUS Server project and contributors
+# This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
+# Version $Id: e8057f73b664b379c12675a9f497fd480fc9c566 $
+#
+
+VENDOR		RuggedCom			15004
+
+BEGIN-VENDOR	RuggedCom
+
+ATTRIBUTE	RuggedCom-Privilege-level		2	string
+
+END-VENDOR RuggedCom

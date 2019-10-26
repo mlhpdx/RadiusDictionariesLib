@@ -1,0 +1,79 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <Authors>Lee Harding</Authors>
+    <Company />
+    <Copyright></Copyright>
+    <Product>Type-Safe Radius Attribute Library</Product>
+    <Description>This package includes type-safe classes generated from the RADIUS dictionaries maintained by the FreeRADIUS project.</Description>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="IannaEnterpriseNumbers.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <DotNetCliToolReference Include="T5.TextTransform.Tool" Version="1.1.0" />
+    <TextTemplate Include="*.tt"/>
+    <Generated Include="Generated\**\*.cs"/>
+  </ItemGroup>
+
+  <Target Name="TextTemplateTransform" BeforeTargets="BeforeBuild">
+    <ItemGroup>
+      <Compile Remove="**\*.cs"/>
+    </ItemGroup>
+    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tt %(TextTemplate.Identity)"/>
+    <ItemGroup>
+      <Compile Include="**\*.cs"/>
+      <Compile Remove="bin\**\*.cs"/>
+      <Compile Remove="obj\**\*.cs"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="TextTemplateClean" AfterTargets="Clean">
+    <Delete Files="@(Generated)" />
+  </Target>
+  
+  
+  
+  
+  <!--<ItemGroup>
+    <None Update="DictionaryToCode2.tt">
+      <LastGenOutput>DictionaryToCode2.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="DictionaryToCode.tt">
+      <LastGenOutput>DictionaryToCode.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="DictionaryToCode2.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DictionaryToCode2.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="DictionaryToCode.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DictionaryToCode.tt</DependentUpon>
+    </Compile>
+    <Compile Update="DictionaryToCode2.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DictionaryToCode2.tt</DependentUpon>
+    </Compile>
+    <Compile Update="DictionaryToCode2.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DictionaryToCode2.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>-->
+
+</Project>
