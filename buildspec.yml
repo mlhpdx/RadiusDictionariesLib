@@ -22,14 +22,12 @@ phases:
     commands:
       - echo "Building Packages"
       - dotnet restore
-      - cd RadiusDictionariesLib
-      - dotnet tt DictionaryToCode2.tt
-      - cd ..
       - dotnet build
-      - dotnet pack -c Release /p:Version=$specifier -o ./nupkg .
+      - echo "Building Packages"
+      - for i in RadiusDictionariesLib; do echo "Building $i" && dotnet pack -c Release /p:Version=$specifier -o ../nupkg "$i"; done
       - echo "Pushing new Package versions"
-      - for i in ./nupkg/*.nupkg; do nuget push -Source github "$i"; done
- 
+      - for i in ./nupkg/*.nupkg; do nuget push -Source github "$i"; done 
+
 artifacts: 
   files: 
     - ./nupkg/*.nupkg 
