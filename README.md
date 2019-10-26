@@ -1,10 +1,10 @@
 # RADIUS Dictionaries Library for .Net Core
 
-Working with RADIUS attributes requires closing following open specifications as well as vendor-defined rules for encoding the content of authentication packets.  Typically, software is written to used the so-called "RADIUS Dictionaries" as generic dictionary data structures.  This library provides a different approach, with each attribute being a type that can be easily used with the pattern matching capabilities of C# 8 (switch expressions, for example).  Perhaps not for everyone, but perhaps prefered by some.
+Working with RADIUS attributes requires closely following the RFCs as well as vendor-defined rules for encoding the content of AAA packets.  Typically, software is written to use the so-called "RADIUS Dictionaries" as generic dictionary data structures.  This library provides a different approach, with each attribute being a type that can be easily used with the pattern matching capabilities of C# 8 (switch expressions, for example).  Perhaps not for everyone, but perhaps prefered by some.
 
 ## Usage
 
-Firstly, this package is distributed as a Nuget packages hosted here at github. I may clone it to nuget.org as well at a later date, but for now follow github's instructions to setup a new source.
+Firstly, this package is distributed as a Nuget packages hosted here at github. I may clone it to nuget.org as well at a later date, but for now follow [github's instructions](https://help.github.com/en/github/managing-packages-with-github-package-registry/configuring-nuget-for-use-with-github-package-registry) to setup a new source.
 
 Now, just add the package:
 ```
@@ -30,12 +30,21 @@ string GetTheThing(IRadiusAttribute attr) {
             {} => "I'm a VSA"
         },
         UserName u => $"It's {u.Value}",
-        UserPassword pw => "Shhh.",
+        UserPassword => "Shhh.",
     };
+}
+```
+Also, where attribute values are defined in a dictionary this library will include them as an attribute-specific enumeration that makes it more difficult to "do the wrong thing" by assigning invalid values to or misinterpreting them. For example:
+```csharp
+void MakeSureToBeSafe(Hp.ManagementProtocol attr) {
+    // is "HTTP" represented by a 5 or 6? I can never remember...
+    if (attr.Value == Hp.ManagementProtocolValue.Http) throw new SecurityException("Nope.");
 }
 ```
 
 ## Versions and Continuous Builds
-This library is auto-generated from the FreeRADIUS project's dictionaries (see their repo).  As new commits hit the `master` branch over there, this project will automatically build, test and publish a new "preview" package version. The versioning makes use of the FreeRADIUS commit ID as part of the suffix, so the two can be correllated. When a new release of FreeRADIUS is tagged, a "production" version of the RadiusDictionariesLIb nuget will be produced with a matching version. If this CI strategy causes you problems, pelase file an issue so we can work it out.
+This library is auto-generated from the FreeRADIUS project's dictionaries (see their repo) text files.  Once CI/CD is fully figured-out new commits to the `master` branch over there will cause this project to automatically build, test and publish a new "preview" package version. 
+
+The versioning of preview packages will make use of the FreeRADIUS commit ID as part of the suffix, so the two can be correllated. When a new release of FreeRADIUS is tagged, a "production" version of the RadiusDictionariesLib nuget will be produced with a matching version. If this versioning strategy causes you problems, please file an issue so we can work it out.
 
 Enjoy!
