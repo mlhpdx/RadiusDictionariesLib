@@ -22,9 +22,9 @@ phases:
     commands:
       - echo "Building Packages"
       - dotnet restore
-      - pushd . && cd RadiusDictionariesLib
+      - cd RadiusDictionariesLib
       - dotnet tt DictionaryToCode2.tt
-      - popd
+      - cd ..
       - dotnet build
       - dotnet pack -c Release /p:Version=$specifier -o ./nupkg .
       - echo "Pushing new Package versions"
