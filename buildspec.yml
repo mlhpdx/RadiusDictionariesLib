@@ -8,13 +8,13 @@ phases:
       dotnet: 2.2
     commands: 
       - apt-get install nuget -y
+      - npm install semver
       - mozroots --import --sync
       - nuget sources Add -Name github -Source https://nuget.pkg.github.com/mlhpdx/index.json -Username $GITHUB_USER_NAME -Password $GITHUB_PASSWORD
  
   pre_build: 
     commands: 
-      - export version=1.0.0
-      - export qualifier=build
+      - if [[ "$CODEBUILD_WEBHOOK_HEAD_REF" =~ refs/tags/.* ]]; then export version=$(echo $CODEBUILD_WEBHOOK_HEAD_REF | sed -E 's/refs\/tags\/(.+)/\1/') && export qualifier=release; else export version=$(semver -i $(git describe --tags --abbrev=0)) && export qualifier=build; fi
       - export suffix=$(date +%s)-$(echo $CODEBUILD_SOURCE_VERSION | cut -c 32-)
       - export specifier=$(case $qualifier in "build") echo "$version-$qualifier.$suffix" ;; "release") echo "$version" ;; "*") echo "$version-$qualifier" ;; esac)
       - env
