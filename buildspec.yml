@@ -8,7 +8,7 @@ phases:
       dotnet: 2.2
     commands: 
       - apt-get install nuget -y
-      - npm install semver
+      - npm install -g semver
       - mozroots --import --sync
       - nuget sources Add -Name github -Source https://nuget.pkg.github.com/mlhpdx/index.json -Username $GITHUB_USER_NAME -Password $GITHUB_PASSWORD
  
