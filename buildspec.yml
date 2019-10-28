@@ -17,6 +17,7 @@ phases:
       - export qualifier=build
       - export suffix=$(date +%s)-$(echo $CODEBUILD_SOURCE_VERSION | cut -c 32-)
       - export specifier=$(case $qualifier in "build") echo "$version-$qualifier.$suffix" ;; "release") echo "$version" ;; "*") echo "$version-$qualifier" ;; esac)
+      - env
        
   build: 
     commands:
