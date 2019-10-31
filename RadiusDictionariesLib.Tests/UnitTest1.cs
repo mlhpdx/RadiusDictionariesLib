@@ -37,10 +37,10 @@ namespace RadiusDictionaryLib.Tests
             var types = type.Assembly.GetTypes()
                 .Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsGenericType)
                 .Where(p => p.Namespace.EndsWith(".Attributes"));
-            
+
             var map = types.ToLookup(
                 p => p.GetProperty("Name", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null) as string,
-                p => ((AttributeTypeIdentifier)p.GetProperty("AttributeId",  BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null)).Numbers[0]);
+                p => ((AttributeTypeIdentifier)p.GetProperty("AttributeId", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null)).Numbers[0]);
 
             Assert.All(map, g => Assert.True(g.Count() == 1));
         }
@@ -49,10 +49,30 @@ namespace RadiusDictionaryLib.Tests
         {
             var type = typeof(IRadiusAttribute);
             var types = type.Assembly.GetTypes()
+                .Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsGenericType)
+                .Where(p => p.Namespace.EndsWith(".Attributes"));
+
+            var attrs = types.Select(p => new
+            {
+                Numbers = ((AttributeTypeIdentifier)p.GetProperty("AttributeId", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null)).Numbers,
+                Name = p.GetProperty("Name", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null) as string
+            });
+            var map = attrs.Where(a => a.Numbers.Length == 1).ToLookup(
+                a => a.Numbers[0],
+                a => a.Name
+            );
+
+            Assert.All(map, g => Assert.True(g.Count() == 1));
+        }
+        [Fact]
+        public void Test6()
+        {
+            var type = typeof(IRadiusAttribute);
+            var types = type.Assembly.GetTypes()
                 .Where(p => p.IsAbstract && p.IsSealed)
                 .Where(p => p.Namespace.EndsWith(".VendorAttributes"));
 
-            Assert.All(types, t => Assert.NotNull(t.GetProperty("VendorId",  BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy)));
+            Assert.All(types, t => Assert.NotNull(t.GetProperty("VendorId", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy)));
         }
 #if NETCOREAPP3_0
         [Fact]

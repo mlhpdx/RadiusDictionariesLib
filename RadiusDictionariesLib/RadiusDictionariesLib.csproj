@@ -13,19 +13,19 @@
 
   <ItemGroup>
     <DotNetCliToolReference Include="T5.TextTransform.Tool" Version="1.1.0" />
-    <TextTemplate Include="*.tt"/>
-    <Generated Include="Generated\**\*.cs"/>
+    <TextTemplate Include="*.tt" />
+    <Generated Include="Generated\**\*.cs" />
   </ItemGroup>
 
   <Target Name="TextTemplateTransform" BeforeTargets="BeforeBuild">
     <ItemGroup>
-      <Compile Remove="**\*.cs"/>
+      <Compile Remove="**\*.cs" />
     </ItemGroup>
-    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tt %(TextTemplate.Identity)"/>
+    <Exec WorkingDirectory="$(ProjectDir)" Command="dotnet tt %(TextTemplate.Identity)" />
     <ItemGroup>
-      <Compile Include="**\*.cs"/>
-      <Compile Remove="bin\**\*.cs"/>
-      <Compile Remove="obj\**\*.cs"/>
+      <Compile Include="**\*.cs" />
+      <Compile Remove="bin\**\*.cs" />
+      <Compile Remove="obj\**\*.cs" />
     </ItemGroup>
   </Target>
 
