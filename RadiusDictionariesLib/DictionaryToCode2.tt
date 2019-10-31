@@ -87,10 +87,15 @@ using RadiusDictionariesLib.Types;
 	string AttrType(string attr) {
 		switch (attr) { 
 			case "string": return "string"; 
-			case "integer": return "uint"; 
+			case "short": return "short";
+			case "integer": return "uint";
+			case "signed": return "int";
+			case "integer64": return "ulong";
 			case "byte": return "byte";
 			case "ipaddr": 
 			case "ip6addr": return "IPAddress"; 
+			case "date": return "DateTime";
+			case "tlv": return "(byte type, byte length, byte[] value)";
 			default: return "ArraySegment<byte>"; 
 		}
 	}
@@ -171,6 +176,7 @@ namespace RadiusDictionariesLib
 			{
 				public static AttributeTypeIdentifier AttributeId => "<#= a.id #>";
 				public static string Name => "<#= a.name #>";
+				public static RadiusAttributeCardinalies Cardinality => RadiusAttributeCardinalies.Unrestricted;
 			}
 <# } #>
 		}
