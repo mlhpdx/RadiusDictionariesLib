@@ -64,7 +64,7 @@ using RadiusDictionariesLib.Types;
 			values = a.p.values.ContainsKey(a.name) ? a.p.values[a.name] : null
 		})
 		.ToLookup(a => a.id)
-		.Select(g => g.First());
+		.Select(g => g.OrderByDescending(a => a.values?.Count() ?? 0).First());
 
 	var vendors = info
 		.Where(p => p.vendor[1] != "Unknown")
@@ -124,6 +124,7 @@ namespace RadiusDictionariesLib.Attributes
 	{
         public static AttributeTypeIdentifier AttributeId => "<#= a.id #>";
         public static string Name => "<#= a.name #>";
+		public static RadiusAttributeCardinalies Cardinality => RadiusAttributeCardinalies.Unrestricted;
 	}
 }
 
@@ -143,7 +144,7 @@ namespace RadiusDictionariesLib
 		//		
 		public static class <#= vcn #>
 		{
-			public static uint VendorId => <#= p.Value.vendors.First().id #>;
+			public static ushort VendorId => <#= p.Value.vendors.First().id #>;
 			public static string Name => "<#= p.Value.vendors.First().name #>";
 
 			public interface I<#= vcn #>Attribute : IVendorSpecificAttribute {}
@@ -176,7 +177,6 @@ namespace RadiusDictionariesLib
 			{
 				public static AttributeTypeIdentifier AttributeId => "<#= a.id #>";
 				public static string Name => "<#= a.name #>";
-				public static RadiusAttributeCardinalies Cardinality => RadiusAttributeCardinalies.Unrestricted;
 			}
 <# } #>
 		}
