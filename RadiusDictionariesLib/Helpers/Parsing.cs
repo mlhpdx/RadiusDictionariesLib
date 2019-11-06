@@ -10,6 +10,20 @@ namespace RadiusDictionariesLib.Helpers
 {
     public static class Parsing
     {
+        public static IEnumerable<IRadiusAttribute> GetAttributes(ArraySegment<byte> bytes)
+        {
+            return SliceAttributes(bytes).Select(GetSingleAttribute);
+        }
+
+        public static IEnumerable<ArraySegment<byte>> SliceAttributes(ArraySegment<byte> bytes)
+        {
+            while (bytes.Count > 0)
+            {
+                yield return bytes.Slice(0, bytes[1]);
+                bytes = bytes.Slice(bytes[1]);
+            }
+        }
+
         public static IRadiusAttribute GetSingleAttribute(ArraySegment<byte> bytes)
         {
             if (bytes.Count < 2)
@@ -48,10 +62,10 @@ namespace RadiusDictionariesLib.Helpers
             return attr;
         }
 
-        static IDictionary<uint, Type> _avpTypes;
+        static IDictionary<byte, Type> _avpTypes;
         static Dictionary<uint, ILookup<byte, Type>> _vsaTypes;
 
-        static IDictionary<uint, Type> GetAvpTypeMap()
+        static IDictionary<byte, Type> GetAvpTypeMap()
         {
             return _avpTypes ?? (_avpTypes = typeof(IRadiusAttribute).Assembly.GetTypes()
                 .Where(p => typeof(IRadiusAttribute).IsAssignableFrom(p) && !p.IsInterface && !p.IsGenericType)
@@ -65,8 +79,8 @@ namespace RadiusDictionariesLib.Helpers
         {
             Func<Type, uint> vendorIdSelector =
                 p => (ushort)p.DeclaringType.GetProperty("VendorId", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null);
-            Func<Type, byte> vsaIdSelector = 
-                p => (byte)((AttributeTypeIdentifier)p.GetProperty("AttributeId", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null)).Numbers[0];
+            Func<Type, byte[]> vsaIdSelector = 
+                p => (byte[])((AttributeTypeIdentifier)p.GetProperty("AttributeId", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null)).Numbers;
 
             if (_vsaTypes == null)
             {
@@ -74,7 +88,10 @@ namespace RadiusDictionariesLib.Helpers
                     .Where(p => typeof(IVendorSpecificAttribute).IsAssignableFrom(p) && !p.IsInterface && !p.IsGenericType)
                     .Where(p => p.Namespace.EndsWith($".{nameof(VendorAttributes)}"))
                     .GroupBy(vendorIdSelector)
-                    .ToDictionary(g => g.Key, g => g.ToLookup(vsaIdSelector));
+                    .ToDictionary(g => g.Key, g => g.Select(a => new { a, id = vsaIdSelector(a) })
+                        .Where(a => a.id.Length == 1) // only top-level attributes, not sub-types
+                        .ToLookup(a => a.id[0], a => a.a)
+                    );
             }
             return _vsaTypes;
         }
@@ -97,7 +114,7 @@ namespace RadiusDictionariesLib.Helpers
                 { typeof(int), bytes => BitConverter.ToInt32(bytes.Reverse().ToArray()) },
                 { typeof(uint), bytes => BitConverter.ToUInt32(bytes.Reverse().ToArray()) },
                 { typeof(byte), bytes => bytes[0] },
-                { typeof((byte type, byte length, byte[] value)), bytes => (bytes[0], bytes[1], bytes.Slice(2)) }
+                { typeof((byte type, byte length, ArraySegment<byte> value)), bytes => (bytes[0], bytes[1], bytes.Slice(2)) }
             });
         }
 
@@ -115,14 +132,27 @@ namespace RadiusDictionariesLib.Helpers
         public static bool TrySetValue(IRadiusAttribute att, ArraySegment<byte> bytes)
         {
             // given the type of the attribute (which defines the type of the attributes Value member)
-            // attempt to coerce the bytes to that value using Parse, Convert, etc.
+            // attempt to coerce the bytes to that value using Parse, Convert, etc. 
+            
+            // TODO: 
+            // Keep in mind that the  value may be a TLV so we can go recursive here. One thing to 
+            // look for could be a fields called Values (plural) versus the singular. Another
+            // could be that the type of att has nested types.
+            if (att is ITypeLengthValue)
+            {
+                // read the type and length
+                // lookup the sub-type
+                // try to set the value of the sub-type (potentially recurse)
+            }
+
             var prop = att.GetType().GetField("Value");
             if (prop == null)
                 return false;
 
+            var ft = prop.FieldType;
             var map = GetValueTypeConverters();
-            var converter = map.ContainsKey(prop.FieldType) ? map[prop.FieldType]
-                : map.FirstOrDefault(g => g.Key.IsAssignableFrom(prop.FieldType)).Value;
+            var converter = map.ContainsKey(ft) ? map[ft]
+                : map.FirstOrDefault(g => g.Key.IsAssignableFrom(ft)).Value;
 
             if (converter == null)
                 return false;

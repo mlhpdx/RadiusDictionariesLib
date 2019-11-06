@@ -5,7 +5,7 @@ namespace RadiusDictionariesLib.Types
 {
     public struct AttributeTypeIdentifier
     {
-        public uint[] Numbers { get; private set; }
+        public byte[] Numbers { get; private set; }
 
         public override bool Equals(object other)
         {
@@ -20,14 +20,14 @@ namespace RadiusDictionariesLib.Types
 
         public override int GetHashCode() => string.Join(", ", Numbers.Select(c => c.ToString())).GetHashCode();
 
-        public static implicit operator AttributeTypeIdentifier(uint number) => new AttributeTypeIdentifier() { Numbers = new[] { number } };
+        public static implicit operator AttributeTypeIdentifier(byte number) => new AttributeTypeIdentifier() { Numbers = new[] { number } };
 
         public static implicit operator AttributeTypeIdentifier(string spec)
             => new AttributeTypeIdentifier()
                 {
                     Numbers =
                     spec.Split('.', StringSplitOptions.RemoveEmptyEntries).Select(n =>
-                        n.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase) ? Convert.ToUInt32(n, 16) : uint.Parse(n)).ToArray()
+                        n.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase) ? Convert.ToByte(n, 16) : byte.Parse(n)).ToArray()
                 };
     }
 }

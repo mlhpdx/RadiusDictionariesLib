@@ -5,18 +5,10 @@ namespace RadiusDictionariesLib.Types
     public enum RadiusAttributeCardinality : byte { ZeroOrMore = 0, ZeroOrOne = 1, None = 2 }
     public struct RadiusAttributeCardinalies
     {
-        static RadiusAttributeCardinalies()
-        {
-            _request_section = BitVector32.CreateSection(3);
-            _accept_section = BitVector32.CreateSection(3, _request_section);
-            _reject_section = BitVector32.CreateSection(3, _accept_section);
-            _challenge_section = BitVector32.CreateSection(3, _reject_section);
-        }
-
-        private static readonly BitVector32.Section _request_section;
-        private static readonly BitVector32.Section _accept_section;
-        private static readonly BitVector32.Section _reject_section;
-        private static readonly BitVector32.Section _challenge_section;
+        private static readonly BitVector32.Section _request_section = BitVector32.CreateSection(3);
+        private static readonly BitVector32.Section _accept_section = BitVector32.CreateSection(3, _request_section);
+        private static readonly BitVector32.Section _reject_section = BitVector32.CreateSection(3, _accept_section);
+        private static readonly BitVector32.Section _challenge_section = BitVector32.CreateSection(3, _reject_section);
 
         public RadiusAttributeCardinalies(RadiusAttributeCardinality request, RadiusAttributeCardinality accept, RadiusAttributeCardinality reject, RadiusAttributeCardinality challenge)
         {

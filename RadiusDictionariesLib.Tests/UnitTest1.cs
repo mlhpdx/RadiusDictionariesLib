@@ -36,7 +36,7 @@ namespace RadiusDictionaryLib.Tests
             var type = typeof(IRadiusAttribute);
             var types = type.Assembly.GetTypes()
                 .Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsGenericType)
-                .Where(p => p.Namespace.EndsWith(".Attributes"));
+                .Where(p => p.Namespace.EndsWith($".{nameof(RadiusDictionariesLib.Attributes)}", StringComparison.Ordinal));
 
             var map = types.ToLookup(
                 p => p.GetProperty("Name", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null) as string,
@@ -50,7 +50,7 @@ namespace RadiusDictionaryLib.Tests
             var type = typeof(IRadiusAttribute);
             var types = type.Assembly.GetTypes()
                 .Where(p => type.IsAssignableFrom(p) && !p.IsInterface && !p.IsGenericType)
-                .Where(p => p.Namespace.EndsWith(".Attributes"));
+                .Where(p => p.Namespace.EndsWith($".{nameof(RadiusDictionariesLib.Attributes)}", StringComparison.Ordinal));
 
             var attrs = types.Select(p => new
             {
@@ -70,7 +70,7 @@ namespace RadiusDictionaryLib.Tests
             var type = typeof(IRadiusAttribute);
             var types = type.Assembly.GetTypes()
                 .Where(p => p.IsAbstract && p.IsSealed)
-                .Where(p => p.Namespace.EndsWith(".VendorAttributes"));
+                .Where(p => p.Namespace.EndsWith($".{nameof(RadiusDictionariesLib.VendorAttributes)}", StringComparison.Ordinal));
 
             Assert.All(types, t => Assert.NotNull(t.GetProperty("VendorId", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy)));
         }

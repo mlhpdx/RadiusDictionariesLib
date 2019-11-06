@@ -24,7 +24,6 @@ using RadiusDictionariesLib.Types;
 	var files = File.ReadAllLines(Path.Combine(root, "dictionary"))
 		.Where(line => line.StartsWith("$INCLUDE "))
 		.Select(line => Path.Combine(root, line.Replace("$INCLUDE ", string.Empty)));
-    // var files = Directory.GetFiles(Path.Combine(root, "Dictionaries"));
 
 	var lines = files.ToDictionary(f => f, f => File.ReadAllLines(f));
 	var info = lines.Select(d => new {
@@ -55,12 +54,13 @@ using RadiusDictionariesLib.Types;
 
 	var avps = info
 		.Where(p => p.vendor[1] == "Unknown")
-		.SelectMany(p => p.attributes.Select(a => new { id = a[2], name = a[1], type = a[3], p }))
+		.SelectMany(p => p.attributes.Select(a => new { id = a[2], name = a[1], type = a[3], meta = a.Length > 4 ? a[4] : string.Empty,  p }))
 		.Distinct()
 		.Select(a => new {
 			a.id, 
 			a.name,
 			a.type,
+			a.meta,
 			values = a.p.values.ContainsKey(a.name) ? a.p.values[a.name] : null
 		})
 		.ToLookup(a => a.id)
@@ -74,12 +74,12 @@ using RadiusDictionariesLib.Types;
 			extensions = g.Select(p => p.extension).Distinct(),
 			vendors = g.Select(p => new { id = p.vendor[2], name = p.vendor[1] }).Distinct(),
 			attributes = g
-				.SelectMany(p => p.attributes.Select(a => new { id = a[2], name = a[1], type = a[3], p }))
-				.Distinct()
+				.SelectMany(p => p.attributes.Select(a => new { id = a[2], name = a[1], type = a[3], meta = a.Length > 4 ? a[4] : string.Empty, p }))
 				.Select(a => new {
 					a.id, 
 					a.name,
 					a.type,
+					a.meta,
 					values = a.p.values.ContainsKey(a.name) ? a.p.values[a.name] : null
 				})
 		});
@@ -99,16 +99,27 @@ using RadiusDictionariesLib.Types;
 			default: return "ArraySegment<byte>"; 
 		}
 	}
+	string AttrValueType(string attr) {
+		switch (attr) { 
+			case "byte": return "byte";
+			case "short": return "short";
+			case "signed": return "int";
+			case "integer64": return "ulong";
+			default: return "uint"; 
+		}
+	}	
 #><# 
 	var avpCounts = new Dictionary<string, int>();
 	foreach(var a in avps) {
+		if (a.meta.Contains("virtual")) continue;
+
 		var avpname = SafeClassName(a.name, avpCounts);
 		manager.StartNewFile($"Generated{Path.DirectorySeparatorChar}AttributeClasses{Path.DirectorySeparatorChar}{avpname}.cs");
 #>
 namespace RadiusDictionariesLib.Attributes
 {
 <#		if (a.values != null) { #>
-	public enum <#= avpname #>Value : uint {
+	public enum <#= avpname #>Value : <#= AttrValueType(a.type) #> {
 <#			var ncnCounts = new Dictionary<string, int>();
 			foreach(var v in a.values) { 
 				var ncn = SafeClassName(v.name, ncnCounts);
@@ -120,9 +131,9 @@ namespace RadiusDictionariesLib.Attributes
 			} #>
 	}
 <#		} #>
-	public class <#= avpname #> : RadiusAttributeDefinition<<#= a.values == null ? AttrType(a.type) : avpname + "Value" #>>
+	public class <#= avpname #> : RadiusAttributeDefinition<<#= a.values == null ? AttrType(a.type) : avpname + "Value" #>> // <#= a.type #>
 	{
-        public static AttributeTypeIdentifier AttributeId => "<#= a.id #>";
+        public static AttributeTypeIdentifier AttributeId => <#= a.id.Contains(".") ? $"\"{a.id}\"" : a.id #>;
         public static string Name => "<#= a.name #>";
 		public static RadiusAttributeCardinalies Cardinality => RadiusAttributeCardinalies.Unrestricted;
 	}
@@ -133,7 +144,7 @@ namespace RadiusDictionariesLib.Attributes
 	var vcnCounts = new Dictionary<string, int>();
 	foreach(var p in vendors) {
 	var vcn = SafeClassName(p.Key, vcnCounts);
-#><# manager.StartNewFile($"Generated{Path.DirectorySeparatorChar}VendorClasses{Path.DirectorySeparatorChar}{vcn}.cs"); #>
+	manager.StartNewFile($"Generated{Path.DirectorySeparatorChar}VendorClasses{Path.DirectorySeparatorChar}{vcn}.cs"); #>
 
 namespace RadiusDictionariesLib
 {
@@ -151,17 +162,24 @@ namespace RadiusDictionariesLib
 			public class <#= vcn #>Attribute<T> : RadiusAttributeDefinition<T>, I<#= vcn #>Attribute { }
 <# 
 	var acnCounts = new Dictionary<string, int>();
+	var last = string.Empty;
 	foreach(var a in p.Value.attributes) 
 	{ 
+		if (a.meta.Contains("virtual")) continue;
+
 		var acn = SafeClassName(a.name, acnCounts);
 		if (acn.StartsWith(vcn) && acn.Length > vcn.Length) {
 			acn = acn.Substring(vcn.Length);
 			if (!char.IsLetter(acn[0]))
 				acn = "_" + acn;
 		}
-#>
-<#		if (a.values != null) { #>
-			public enum <#= acn #>Value : uint {
+
+		var id = a.id;
+		if (id.StartsWith(".")) id = last + id;
+		else last = id;
+
+		if (a.values != null) { #>
+			public enum <#= acn #>Value : <#= AttrValueType(a.type) #> {
 <#			var ncnCounts = new Dictionary<string, int>();
 			foreach(var v in a.values) { 
 				var ncn = SafeClassName(v.name, ncnCounts);
@@ -173,9 +191,9 @@ namespace RadiusDictionariesLib
 			} #>
 			}
 <#		} #>
-			public class <#= acn #> : <#= vcn #>Attribute<<#= a.values == null ? AttrType(a.type) : acn + "Value" #>>
+			public class <#= acn #> : <#= vcn #>Attribute<<#= a.values == null ? AttrType(a.type) : acn + "Value" #>> // <#= a.type #>
 			{
-				public static AttributeTypeIdentifier AttributeId => "<#= a.id #>";
+				public static AttributeTypeIdentifier AttributeId => "<#= id #>";
 				public static string Name => "<#= a.name #>";
 			}
 <# } #>
