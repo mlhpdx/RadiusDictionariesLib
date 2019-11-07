@@ -65,6 +65,12 @@ namespace RadiusDictionariesLib.Helpers
         static IDictionary<byte, Type> _avpTypes;
         static Dictionary<uint, ILookup<byte, Type>> _vsaTypes;
 
+
+        static Func<Type, uint> vendorIdSelector =
+            p => (ushort)p.DeclaringType.GetProperty("VendorId", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null);
+        static Func<Type, byte[]> attIdSelector =
+            p => (byte[])((AttributeTypeIdentifier)p.GetProperty("AttributeId", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null)).Numbers;
+
         static IDictionary<byte, Type> GetAvpTypeMap()
         {
             return _avpTypes ?? (_avpTypes = typeof(IRadiusAttribute).Assembly.GetTypes()
@@ -72,23 +78,21 @@ namespace RadiusDictionariesLib.Helpers
                 .Where(p => p.Namespace.EndsWith($".{nameof(Attributes)}"))
                 .GroupBy(
                     p => ((AttributeTypeIdentifier)p.GetProperty("AttributeId", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null)).Numbers[0])
-                .ToDictionary(g => g.Key, g => g.First())
+                .ToDictionary(g => g.Key, g => g.Select(a => new { a, id = attIdSelector(a) })
+                    .Where(a => a.id.Length == 1) // only top-level attributes, not sub-types
+                    .First().a
+                )
             );
         }
         static Dictionary<uint, ILookup<byte, Type>> GetVsaTypeMap()
         {
-            Func<Type, uint> vendorIdSelector =
-                p => (ushort)p.DeclaringType.GetProperty("VendorId", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null);
-            Func<Type, byte[]> vsaIdSelector = 
-                p => (byte[])((AttributeTypeIdentifier)p.GetProperty("AttributeId", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).GetValue(null)).Numbers;
-
             if (_vsaTypes == null)
             {
                 _vsaTypes = typeof(IVendorSpecificAttribute).Assembly.GetTypes()
                     .Where(p => typeof(IVendorSpecificAttribute).IsAssignableFrom(p) && !p.IsInterface && !p.IsGenericType)
                     .Where(p => p.Namespace.EndsWith($".{nameof(VendorAttributes)}"))
                     .GroupBy(vendorIdSelector)
-                    .ToDictionary(g => g.Key, g => g.Select(a => new { a, id = vsaIdSelector(a) })
+                    .ToDictionary(g => g.Key, g => g.Select(a => new { a, id = attIdSelector(a) })
                         .Where(a => a.id.Length == 1) // only top-level attributes, not sub-types
                         .ToLookup(a => a.id[0], a => a.a)
                     );

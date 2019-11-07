@@ -178,6 +178,18 @@ namespace RadiusDictionariesLib
 		if (id.StartsWith(".")) id = last + id;
 		else last = id;
 
+		var numbers = id.Split('.', StringSplitOptions.RemoveEmptyEntries).Select(n =>
+			n.StartsWith("0x", StringComparison.InvariantCultureIgnoreCase) ? Convert.ToInt32(n, 16) : int.Parse(n)).ToList();
+
+		// HACK: fix weird cases where dictionaries specify attribute IDs > 255 by splitting them
+		if (numbers.First() > 255) {
+			var tmp = numbers.First();
+			numbers[0] = 255;
+			numbers.Insert(1, tmp & 0xFF);
+		}
+			
+		id = string.Join(".", numbers);
+
 		if (a.values != null) { #>
 			public enum <#= acn #>Value : <#= AttrValueType(a.type) #> {
 <#			var ncnCounts = new Dictionary<string, int>();
