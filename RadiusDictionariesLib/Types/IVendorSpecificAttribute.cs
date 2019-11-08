@@ -1,1 +1,4 @@
-public interface IVendorSpecificAttribute { }
+namespace RadiusDictionariesLib.Types
+{
+    public interface IVendorSpecificAttribute { }
+}

@@ -39,7 +39,7 @@ namespace RadiusDictionariesLib.Tests
         [Fact]
         public void Test4()
         {
-            var service = new byte[] { 6, 3, 1 };
+            var service = new byte[] { 6, 6, 0, 0, 0, 1 };
             var att = Helpers.Parsing.GetSingleAttribute(service);
             Assert.IsType<ServiceType>(att);
             Assert.Equal(ServiceTypeValue.LoginUser, (att as ServiceType).Value);
@@ -60,8 +60,8 @@ namespace RadiusDictionariesLib.Tests
             var bytes = ip.GetAddressBytes();
             var framedip = new byte[] { 8, (byte)(bytes.Length + 2) }.Concat(bytes).ToArray();
             var att = Helpers.Parsing.GetSingleAttribute(framedip);
-            Assert.IsType<FramedAddress>(att);
-            Assert.Equal(ip, (att as FramedAddress).Value);
+            Assert.IsType<FramedIpAddress>(att);
+            Assert.Equal(ip, (att as FramedIpAddress).Value);
         }
     }
 }

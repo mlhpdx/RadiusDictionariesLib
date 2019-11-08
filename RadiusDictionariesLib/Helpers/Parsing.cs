@@ -47,7 +47,7 @@ namespace RadiusDictionariesLib.Helpers
 
                 if (value.Count > 1 && (cls = FindVsaClass(vendor, value[0])) != null)
                 {
-                    if (value[1] > value.Count - 2)
+                    if (value[1] > value.Count)
                         throw new ArgumentOutOfRangeException(nameof(bytes), "VSA sub-type found but second byte (length) exceeds remaining buffer length .");
                     value = value.Slice(2); // skip 2 bytes for type and length
                 }
@@ -110,7 +110,7 @@ namespace RadiusDictionariesLib.Helpers
                 { typeof(ArraySegment<byte>), bytes => bytes },
                 { typeof(string), bytes => Encoding.UTF8.GetString(bytes) },
                 { typeof(IPAddress), bytes => new IPAddress(bytes) },
-                { typeof(DateTime), bytes => _epochStart.AddSeconds(BitConverter.ToInt64(bytes.Reverse().ToArray())) },
+                { typeof(DateTime), bytes => _epochStart.AddSeconds(BitConverter.ToUInt32(bytes.Reverse().ToArray())) },
                 { typeof(short), bytes => BitConverter.ToInt16(bytes.Reverse().ToArray()) },
                 { typeof(ushort), bytes => BitConverter.ToUInt16(bytes.Reverse().ToArray()) },
                 { typeof(long), bytes => BitConverter.ToInt64(bytes.Reverse().ToArray()) },
@@ -154,6 +154,8 @@ namespace RadiusDictionariesLib.Helpers
                 return false;
 
             var ft = prop.FieldType;
+            if (ft.IsEnum) ft = Enum.GetUnderlyingType(ft);
+
             var map = GetValueTypeConverters();
             var converter = map.ContainsKey(ft) ? map[ft]
                 : map.FirstOrDefault(g => g.Key.IsAssignableFrom(ft)).Value;

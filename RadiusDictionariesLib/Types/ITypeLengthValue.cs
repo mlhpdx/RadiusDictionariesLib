@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace RadiusDictionariesLib.Types
+﻿namespace RadiusDictionariesLib.Types
 {
-    interface ITypeLengthValue
+    public interface ITypeLengthValue
     {
     }
 }
