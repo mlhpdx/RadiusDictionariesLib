@@ -64,7 +64,7 @@ using RadiusDictionariesLib.Types;
 			values = a.p.values.ContainsKey(a.name) ? a.p.values[a.name] : null
 		})
 		.ToLookup(a => a.id)
-		.Select(g => g.OrderByDescending(a => a.values?.Count() ?? 0).First());
+		.Select(g => g.Last());
 
 	var vendors = info
 		.Where(p => p.vendor[1] != "Unknown")
@@ -187,7 +187,7 @@ namespace RadiusDictionariesLib
 			numbers[0] = 255;
 			numbers.Insert(1, tmp & 0xFF);
 		}
-			
+
 		id = string.Join(".", numbers);
 
 		if (a.values != null) { #>
